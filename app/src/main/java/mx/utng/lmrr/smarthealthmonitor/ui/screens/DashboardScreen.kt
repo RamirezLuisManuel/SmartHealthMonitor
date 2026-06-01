@@ -1,7 +1,6 @@
 package mx.utng.lmrr.smarthealthmonitor.ui.screens
 
 // ui/screens/DashboardScreen.kt
-import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,31 +15,39 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import mx.utng.lmrr.smarthealthmonitor.data.models.LecturaFC
-import mx.utng.lmrr.smarthealthmonitor.data.models.MockData
+import androidx.lifecycle.viewmodel.compose.viewModel
+import mx.utng.lmrr.smarthealthmonitor.BuildConfig
+import mx.utng.lmrr.smarthealthmonitor.data.SmartHealthRepository
 import mx.utng.lmrr.smarthealthmonitor.ui.components.FilaHistorial
 import mx.utng.lmrr.smarthealthmonitor.ui.components.TarjetaDato
 import mx.utng.lmrr.smarthealthmonitor.ui.theme.SmartHealthMonitorTheme
+import mx.utng.lmrr.smarthealthmonitor.ui.viewmodel.DashboardViewModel
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     onHistorialClick: () -> Unit = {},
     onAlertClick: () -> Unit = {},
-    // TODO S6: Reemplazar con ViewModel que recibe datos del wearable
-    fc: Int = MockData.fcActual,
-    pasos: Int = MockData.pasosActual,
-    historial: List<LecturaFC> = MockData.historialFC
+    viewModel: DashboardViewModel = viewModel(),  // ← inyección automática
 ) {
+    // collectAsState() convierte StateFlow en State de Compose
+    val fc by viewModel.fc.collectAsState()
+    val pasos by viewModel.pasos.collectAsState()
+    val historial = viewModel.historial
+
     SmartHealthMonitorTheme {
         Scaffold(
             topBar = {
@@ -70,7 +77,6 @@ fun DashboardScreen(
                 }
             }
         ) { paddingValues ->
-            // ⚠️ paddingValues OBLIGATORIO
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -114,13 +120,29 @@ fun DashboardScreen(
                 items(historial, key = { it.id }) { lectura ->
                     FilaHistorial(lectura = lectura)
                 }
+                item {
+                    // Botón de simulación — SOLO PARA DEBUG
+                    if (BuildConfig.DEBUG) {
+                        OutlinedButton(
+                            onClick = {
+                                // Simular lectura del wearable
+                                val fcSimulado = (60..110).random()
+                                SmartHealthRepository.actualizarFC(fcSimulado)
+                                SmartHealthRepository.actualizarPasos((3000..8000).random())
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Simular dato del wearable (DEBUG)")
+                        }
+                    }
+                }
             }
         }
     }
 }
 
 @Preview(showBackground = true, name = "Dashboard - Light",
-    showSystemUi = true, device = "id:pixel_6")
+    showSystemUi = true, device = "spec:width=1080px,height=2400px,dpi=440")
 @Preview(showBackground = true, name = "Dashboard - Dark",
     uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 @Composable
