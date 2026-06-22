@@ -14,6 +14,7 @@ class WearListenerService : WearableListenerService() {
     }
 
     override fun onMessageReceived(messageEvent: MessageEvent) {
+        Log.d(TAG, "onMessageReceived - INICIO")
         val data   = String(messageEvent.data)
         val path   = messageEvent.path
         Log.d(TAG, "Mensaje recibido: path=$path, data=$data")
