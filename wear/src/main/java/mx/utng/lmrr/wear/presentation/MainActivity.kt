@@ -79,7 +79,7 @@ class MainActivity : ComponentActivity() {
 
         // 3. Mostramos la interfaz de Compose (sin importar si ya hay permisos o apenas se pedirán)
         setContent {
-            WearApp()
+            WearDashboardScreen()
         }
     }
 
@@ -96,89 +96,45 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun WearApp() {
+fun WearDashboardScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // Variable para mostrar los latidos en la pantalla del reloj
-    var bpmText by remember { mutableStateOf("---") }
+    // Aquí mantenemos el botón que ya nos funcionaba para probar la conexión
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Favorite,
+                contentDescription = "Corazón",
+                tint = Color.Red,
+                modifier = Modifier.size(40.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "SmartHealth Wear",
+                style = MaterialTheme.typography.titleMedium, // Tipografía adaptada para Wear
+                color = MaterialTheme.colorScheme.primary
+            )
 
-    // 1. Creamos el Callback que se ejecutará CADA SEGUNDO cuando haya un nuevo dato
-    val measureCallback = remember {
-        object : MeasureCallback {
-            override fun onAvailabilityChanged(dataType: DeltaDataType<*, *>, availability: Availability) {
-                Log.d("MeasureClient", "Disponibilidad del sensor: $availability")
-            }
+            Spacer(modifier = Modifier.height(10.dp))
 
-            override fun onDataReceived(data: DataPointContainer) {
-                val fcDataPoints = data.getData(DataType.HEART_RATE_BPM)
-                val ultimoDatoFC = fcDataPoints.lastOrNull()
-
-                if (ultimoDatoFC is SampleDataPoint<Double>) {
-                    val bpm = ultimoDatoFC.value.toInt()
-                    // Usamos un valor temporal para forzar la actualización si es el mismo
-                    Log.d("MeasureClient", "Dato instantáneo del sensor: $bpm")
-                    bpmText = bpm.toString()
-
-                    // Enviar al teléfono inmediatamente
+            Button(
+                onClick = {
+                    val sender = WearDataSender(context)
                     scope.launch {
-                        val sender = WearDataSender(context)
-                        sender.enviarFC(bpm)
+                        sender.enviarFC(120)
                     }
-                }
-            }
-        }
-    }
-
-    SmartHealthMonitorTheme {
-        AppScaffold {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Favorite,
-                        contentDescription = "Corazón",
-                        tint = Color.Red,
-                        modifier = Modifier.size(40.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Muestra los latidos en tiempo real en la pantalla
-                    Text(
-                        text = "$bpmText BPM",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Button(
-                        onClick = {
-                            // 2. Registramos el cliente para empezar a escuchar en tiempo real
-                            val healthClient = HealthServices.getClient(context)
-                            healthClient.measureClient.registerMeasureCallback(
-                                DataType.HEART_RATE_BPM,
-                                measureCallback
-                            )
-                            Log.d("MeasureClient", "Escuchando en tiempo real iniciado")
-                        },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
-                    ) {
-                        Text("LEER SENSOR EN VIVO", fontSize = 10.sp)
-                    }
-                }
+                Text("SIMULAR 120 BPM", fontSize = 10.sp)
             }
         }
     }
-}
-
-@WearPreviewDevices
-@Composable
-fun DefaultPreview() {
-    WearApp()
 }
