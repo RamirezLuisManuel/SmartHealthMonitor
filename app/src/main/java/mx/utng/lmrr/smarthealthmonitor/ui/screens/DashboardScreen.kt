@@ -1,6 +1,5 @@
 package mx.utng.lmrr.smarthealthmonitor.ui.screens
 
-// ui/screens/DashboardScreen.kt
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -24,11 +23,13 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import mx.utng.lmrr.smarthealthmonitor.BuildConfig
 import mx.utng.lmrr.smarthealthmonitor.data.SmartHealthRepository
 import mx.utng.lmrr.smarthealthmonitor.ui.components.FilaHistorial
@@ -41,12 +42,13 @@ import mx.utng.lmrr.smarthealthmonitor.ui.viewmodel.DashboardViewModel
 fun DashboardScreen(
     onHistorialClick: () -> Unit = {},
     onAlertClick: () -> Unit = {},
-    viewModel: DashboardViewModel = viewModel(),  // ← inyección automática
+    viewModel: DashboardViewModel = viewModel(),
 ) {
+    val scope = rememberCoroutineScope()
     // collectAsState() convierte StateFlow en State de Compose
     val fc by viewModel.fc.collectAsState()
     val pasos by viewModel.pasos.collectAsState()
-    val historial = viewModel.historial
+    val historial by viewModel.historial.collectAsState()
 
     SmartHealthMonitorTheme {
         Scaffold(
@@ -120,6 +122,7 @@ fun DashboardScreen(
                 items(historial, key = { it.id }) { lectura ->
                     FilaHistorial(lectura = lectura)
                 }
+                
                 item {
                     // Botón de simulación — SOLO PARA DEBUG
                     if (BuildConfig.DEBUG) {
@@ -127,7 +130,9 @@ fun DashboardScreen(
                             onClick = {
                                 // Simular lectura del wearable
                                 val fcSimulado = (60..110).random()
-                                SmartHealthRepository.actualizarFC(fcSimulado)
+                                scope.launch {
+                                    SmartHealthRepository.actualizarFC(fcSimulado)
+                                }
                                 SmartHealthRepository.actualizarPasos((3000..8000).random())
                             },
                             modifier = Modifier.fillMaxWidth()

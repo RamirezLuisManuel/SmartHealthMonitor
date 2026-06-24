@@ -14,6 +14,9 @@ object SmartHealthRepository {
     private val _fcFlow = MutableStateFlow(0)
     val fcFlow: StateFlow<Int> = _fcFlow.asStateFlow()
 
+    private val _pasosFlow = MutableStateFlow(0)
+    val pasosFlow: StateFlow<Int> = _pasosFlow.asStateFlow()
+
     private var dao: LecturaFCDao? = null
 
     fun init(context: Context) {

@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 interface LecturaFCDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertar(lectura: LecturaFC)
+    suspend fun insertar(lectura: LecturaFC): Long
 
     @Query("""
        SELECT * FROM lecturas_fc
@@ -21,5 +21,5 @@ interface LecturaFCDao {
     @Query("""
         DELETE FROM lecturas_fc
         WHERE timestamp < :limite""")
-    suspend fun limpiarViejos(limite: Long)
+    suspend fun limpiarViejos(limite: Long): Int
 }
