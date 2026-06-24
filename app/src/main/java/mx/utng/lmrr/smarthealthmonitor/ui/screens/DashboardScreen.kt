@@ -16,6 +16,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -23,7 +26,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,17 +47,39 @@ import mx.utng.lmrr.smarthealthmonitor.ui.viewmodel.DashboardViewModel
 @Composable
 fun DashboardScreen(
     onHistorialClick: () -> Unit = {},
-    onAlertClick: () -> Unit = {},
+    onAlertClick: () -> Unit = {}, // Se mantiene por compatibilidad de navegación, aunque ahora el FAB usa estado local
     viewModel: DashboardViewModel = viewModel(),
 ) {
-    val scope = rememberCoroutineScope()
-    // collectAsState() convierte StateFlow en State de Compose
     val fc by viewModel.fc.collectAsState()
     val pasos by viewModel.pasos.collectAsState()
     val historial by viewModel.historial.collectAsState()
 
+    // ── Estado del diálogo y Snackbar ──────────────────────
+    var mostrarAlerta by remember { mutableStateOf(false) }
+    val snackbarHost = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    // ── Diálogo condicional ────────────────────────────────
+    if (mostrarAlerta) {
+        AlertaScreen(
+            fc = fc,
+            onDismiss = { mostrarAlerta = false },
+            onConfirmar = {
+                mostrarAlerta = false
+                scope.launch {
+                    snackbarHost.showSnackbar(
+                        message = "✅ Alerta enviada a tus contactos de emergencia",
+                        duration = SnackbarDuration.Long
+                    )
+                }
+            }
+        )
+    }
+
     SmartHealthMonitorTheme {
         Scaffold(
+            // ── Snackbar host en el Scaffold ───────────────
+            snackbarHost = { SnackbarHost(hostState = snackbarHost) },
             topBar = {
                 TopAppBar(
                     title = {
@@ -61,20 +89,20 @@ fun DashboardScreen(
                         )
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor    = MaterialTheme.colorScheme.primary,
+                        containerColor = MaterialTheme.colorScheme.primary,
                         titleContentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 )
             },
             floatingActionButton = {
                 FloatingActionButton(
-                    onClick       = onAlertClick,
+                    onClick = { mostrarAlerta = true }, // Dispara la alerta local
                     containerColor = MaterialTheme.colorScheme.error
                 ) {
                     Icon(
-                        imageVector       = Icons.Default.Warning,
+                        imageVector = Icons.Default.Warning,
                         contentDescription = "Enviar alerta de emergencia",
-                        tint              = MaterialTheme.colorScheme.onError
+                        tint = MaterialTheme.colorScheme.onError
                     )
                 }
             }
@@ -83,24 +111,24 @@ fun DashboardScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
-                contentPadding        = PaddingValues(16.dp),
-                verticalArrangement   = Arrangement.spacedBy(12.dp)
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // ── Tarjeta FC ────────────────────────────
                 item {
                     TarjetaDato(
-                        valor      = "$fc",
-                        unidad     = "bpm",
-                        label      = "Frecuencia cardíaca",
+                        valor = "$fc",
+                        unidad = "bpm",
+                        label = "Frecuencia cardíaca",
                         colorValor = MaterialTheme.colorScheme.error
                     )
                 }
                 // ── Tarjeta Pasos ─────────────────────────
                 item {
                     TarjetaDato(
-                        valor      = "%,d".format(pasos),
-                        unidad     = "pasos",
-                        label      = "Pasos del día",
+                        valor = "%,d".format(pasos),
+                        unidad = "pasos",
+                        label = "Pasos del día",
                         colorValor = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -109,10 +137,12 @@ fun DashboardScreen(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment     = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Historial reciente",
-                            style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text = "Historial reciente",
+                            style = MaterialTheme.typography.titleMedium
+                        )
                         TextButton(onClick = onHistorialClick) {
                             Text("Ver todo")
                         }
@@ -122,13 +152,11 @@ fun DashboardScreen(
                 items(historial, key = { it.id }) { lectura ->
                     FilaHistorial(lectura = lectura)
                 }
-                
                 item {
                     // Botón de simulación — SOLO PARA DEBUG
                     if (BuildConfig.DEBUG) {
                         OutlinedButton(
                             onClick = {
-                                // Simular lectura del wearable
                                 val fcSimulado = (60..110).random()
                                 scope.launch {
                                     SmartHealthRepository.actualizarFC(fcSimulado)
