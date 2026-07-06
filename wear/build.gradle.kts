@@ -49,8 +49,14 @@ dependencies {
     implementation("com.google.android.horologist:horologist-compose-layout:0.6.17")
     implementation("com.google.android.horologist:horologist-compose-material:0.6.17")
 
+    // Jetpack WatchFace API
+    implementation("androidx.wear.watchface:watchface:1.2.1")
+    implementation("androidx.wear.watchface:watchface-complications-rendering:1.2.1")
+    implementation("androidx.wear.watchface:watchface-style:1.2.1")
+
     // Health Services API
     implementation("androidx.health:health-services-client:1.1.0-alpha03")
+    implementation(libs.androidx.compose.material)
     // Coroutines await() para Play Services y Guava
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.7.3")
