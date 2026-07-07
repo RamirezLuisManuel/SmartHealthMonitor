@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Color primario azul/teal para SmartHealth -->
+    <color name="sh_primary">#1A73E8</color>
+    <!-- Ámbar para acento -->
+    <color name="sh_amber">#FFC107</color>
+    <!-- Fondo oscuro para TV -->
+    <color name="sh_dark">#0D1117</color>
+</resources>
