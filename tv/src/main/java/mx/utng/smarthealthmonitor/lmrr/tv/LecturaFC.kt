@@ -1,12 +1,20 @@
 package mx.utng.smarthealthmonitor.lmrr.tv
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
 /**
- * Modelo local de lectura de frecuencia cardiaca para el módulo TV.
- * No depende de Room — los datos vienen de MockData o del Repository compartido.
+ * Entidad Room para el módulo TV.
+ * Almacena lecturas de FC históricas en la BD local del TV.
  */
+@Entity(tableName = "lecturas_fc_tv")
 data class LecturaFC(
-    val id: Int,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
     val valorBpm: Int,
-    val hora: String,
+    val timestamp: Long = System.currentTimeMillis(),
+    val hora: String = java.text.SimpleDateFormat(
+        "HH:mm", java.util.Locale.getDefault()
+    ).format(java.util.Date()),
     val esNormal: Boolean = valorBpm in 60..100
 )

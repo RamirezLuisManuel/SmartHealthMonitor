@@ -2,24 +2,36 @@ package mx.utng.smarthealthmonitor.lmrr.tv
 
 import android.os.Bundle
 import android.view.View
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.leanback.app.BrowseSupportFragment
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.HeaderItem
 import androidx.leanback.widget.ListRow
 import androidx.leanback.widget.ListRowPresenter
+import kotlinx.coroutines.launch
 
 /**
  * MainFragment — UI principal de la app Android TV.
  *
- * Arquitectura Leanback:
+ * Arquitectura Leanback + ViewModel:
  *   BrowseSupportFragment → sidebar de headers + área de contenido
+ *   TvViewModel           → expone FC y historial como StateFlow
  *   ListRow               → cada fila horizontal de cards
  *   FCCardPresenter       → convierte LecturaFC → ImageCardView
  *   ArrayObjectAdapter    → lista observable de ítems
- *
- * Esta arquitectura es idéntica a la de YouTube TV, Netflix y Cinépolis en Android TV.
  */
 class MainFragment : BrowseSupportFragment() {
+
+    private val viewModel: TvViewModel by viewModels()
+
+    /** Adapter mutable de la fila de historial — se actualiza desde el Flow de Room */
+    private lateinit var histAdapter: ArrayObjectAdapter
+
+    /** Adapter mutable de la fila de estado actual — se actualiza con el FC en vivo */
+    private lateinit var estadoAdapter: ArrayObjectAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -29,29 +41,50 @@ class MainFragment : BrowseSupportFragment() {
         headersState = HEADERS_ENABLED
         isHeadersTransitionOnBackEnabled = true
 
-        // Color de la marca en el sidebar (barra lateral de headers)
-        brandColor           = resources.getColor(R.color.sh_primary, null)
+        // Color de marca en el sidebar
+        brandColor            = resources.getColor(R.color.sh_primary, null)
         searchAffordanceColor = resources.getColor(R.color.sh_amber, null)
 
         cargarFilas()
+        observarDatos()
     }
 
     private fun cargarFilas() {
         val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
 
-        // ── Fila 1: Estado actual (FC + Pasos) ───────────────────────
-        val estadoAdapter = ArrayObjectAdapter(FCCardPresenter())
-        // Datos simulados — en Ej.03 vendrán de Room via ViewModel
-        estadoAdapter.add(LecturaFC(id = 0, valorBpm = 88,   hora = "Ahora"))
-        estadoAdapter.add(LecturaFC(id = 1, valorBpm = 4250, hora = "Pasos"))
+        // ── Fila 1: Estado actual (FC en tiempo real) ─────────────────
+        estadoAdapter = ArrayObjectAdapter(FCCardPresenter())
+        // Valor inicial mientras llegan datos del Repository
+        estadoAdapter.add(LecturaFC(valorBpm = 0, hora = "Cargando..."))
         rowsAdapter.add(ListRow(HeaderItem("Estado actual"), estadoAdapter))
 
-        // ── Fila 2: Historial de FC ───────────────────────────────────
-        val histAdapter = ArrayObjectAdapter(FCCardPresenter())
-        MockData.historialFC.forEach { histAdapter.add(it) }
+        // ── Fila 2: Historial FC desde Room ───────────────────────────
+        histAdapter = ArrayObjectAdapter(FCCardPresenter())
         rowsAdapter.add(ListRow(HeaderItem("Historial FC"), histAdapter))
 
-        // Asignar el adapter al BrowseSupportFragment
         this.adapter = rowsAdapter
+    }
+
+    private fun observarDatos() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+
+                // Observar FC actual y actualizar la primera card de "Estado actual"
+                launch {
+                    viewModel.fc.collect { bpm ->
+                        estadoAdapter.clear()
+                        estadoAdapter.add(LecturaFC(valorBpm = bpm, hora = "Ahora"))
+                    }
+                }
+
+                // Observar historial de Room y actualizar la fila completa
+                launch {
+                    viewModel.historial.collect { lecturas ->
+                        histAdapter.clear()
+                        lecturas.forEach { histAdapter.add(it) }
+                    }
+                }
+            }
+        }
     }
 }

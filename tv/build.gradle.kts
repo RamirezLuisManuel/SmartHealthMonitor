@@ -61,4 +61,12 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
     // Core KTX
     implementation("androidx.core:core-ktx:1.16.0")
+    // Fragment KTX — requerido para viewModels() delegate
+    implementation("androidx.fragment:fragment-ktx:1.8.6")
+    // Lifecycle (collectAsStateWithLifecycle, repeatOnLifecycle)
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    // Room — base de datos local del módulo TV
+    implementation("androidx.room:room-runtime:2.7.1")
+    implementation("androidx.room:room-ktx:2.7.1")
+    ksp("androidx.room:room-compiler:2.7.1")
 }
