@@ -17,12 +17,13 @@ class SmartHealthWatchFaceService : WatchFaceService() {
         currentUserStyleRepository: CurrentUserStyleRepository
     ): WatchFace {
         val renderer = SmartHealthRenderer(
-            context                              = applicationContext,
-            surfaceHolder                        = surfaceHolder,
-            watchState                           = watchState,
-            complicationSlotsManager             = complicationSlotsManager,
-            currentUserStyleRepository           = currentUserStyleRepository,
-            interactiveDrawModeUpdateDelayMillis = 1_000L
+            context = applicationContext,
+            surfaceHolder = surfaceHolder,
+            watchState = watchState,
+            complicationSlotsManager = complicationSlotsManager,
+            currentUserStyleRepository = currentUserStyleRepository,
+            interactiveDrawModeUpdateDelayMillis = 1_000L,
+            clearWithBackgroundTintBeforeRenderingHighlightLayer = TODO()
         )
         return WatchFace(WatchFaceType.DIGITAL, renderer)
     }

@@ -21,13 +21,14 @@ class SmartHealthRenderer(
     watchState: WatchState,
     complicationSlotsManager: ComplicationSlotsManager,
     currentUserStyleRepository: CurrentUserStyleRepository,
-    interactiveDrawModeUpdateDelayMillis: Long
+    interactiveDrawModeUpdateDelayMillis: Long,
+    clearWithBackgroundTintBeforeRenderingHighlightLayer: Boolean
 ) : Renderer.CanvasRenderer2<Renderer.SharedAssets>(
     surfaceHolder,
     currentUserStyleRepository,
     watchState,
     androidx.wear.watchface.CanvasType.HARDWARE,
-    interactiveDrawModeUpdateDelayMillis
+    interactiveDrawModeUpdateDelayMillis, clearWithBackgroundTintBeforeRenderingHighlightLayer
 ) {
 
     private val paintHora = Paint().apply {
