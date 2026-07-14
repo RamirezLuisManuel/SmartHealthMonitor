@@ -23,6 +23,35 @@ Desarrollada como proyecto integrador — UTNG 9° Cuatrimestre 2025.
 | HistorialScreen | Lecturas persistidas en Room con Flow reactivo |
 | AlertaScreen | AlertDialog MD3 + Snackbar de confirmación |
 
+
+## Arquitectura — SmartHealth Monitor
+ 
+```
+Sensor PPG (Wear OS)
+    │  Health Services API
+    ▼
+PassiveListenerService (wear)
+    │  MessageClient (BLE)
+    ▼
+WearListenerService (app)
+    │  SmartHealthRepository
+    ▼
+StateFlow<Int> (fcActual)  ──────────────────────────────────┐
+    │                                                        │
+    ▼                                                        ▼
+DashboardViewModel (app)              TvViewModel (tv)
+    │  collectAsState()                    │  collectAsState()
+    ▼                                        ▼
+DashboardScreen (Compose)          TvCatalogScreen (Compose TV)
+    └── CastButton ──► Chromecast (Remote Playback)
+ 
+Room DB (LecturaFC)  ◄──  Repository  ──►  Flow<List<LecturaFC>>
+                                                │
+                          ┌─────────────────────┴──────────┐
+                          ▼                                ▼
+               HistorialScreen (app)        TvCatalogScreen (tv)
+```
+
 ## Capturas de pantalla
 ![Login](screenshots/login.png)
 ![Dashboard](screenshots/dashboard.png)
@@ -41,4 +70,4 @@ Luis Manuel Ramírez Ramírez - luismanuelr245@gmail.com - UTNG - Ing. en Desarr
 | SmartHealth WatchFace | Hora + FC en el WatchFace nativo |
 
 ![WatchFace](screenshots/watchface.png)
-![WearDashboard](screenshots/wear_dashboard.png)
+![WearDashboard](screenshots/wear_dashboard.png)
