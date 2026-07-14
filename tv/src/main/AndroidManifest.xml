@@ -11,7 +11,10 @@
         android:name="android.hardware.touchscreen"
         android:required="false" />
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
+        android:name=".SmartHealthTvApp"
         android:allowBackup="true"
         android:label="SmartHealth TV"
         android:supportsRtl="true"
@@ -19,7 +22,7 @@
         android:banner="@drawable/banner_tv">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".TVActivity"
             android:exported="true"
             android:label="SmartHealth TV">
             <intent-filter>

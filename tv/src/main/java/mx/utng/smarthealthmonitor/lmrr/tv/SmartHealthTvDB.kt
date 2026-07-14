@@ -24,7 +24,8 @@ abstract class SmartHealthTvDB : RoomDatabase() {
                     context.applicationContext,
                     SmartHealthTvDB::class.java,
                     "smarthealthtv.db"
-                ).build().also { INSTANCE = it }
+                ).fallbackToDestructiveMigration()
+                 .build().also { INSTANCE = it }
             }
     }
 }
