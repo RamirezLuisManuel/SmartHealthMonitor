@@ -33,9 +33,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.foundation.layout.size
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
+import androidx.mediarouter.app.MediaRouteButton
+import com.google.android.gms.cast.framework.CastButtonFactory
 import mx.utng.lmrr.smarthealthmonitor.BuildConfig
 import mx.utng.lmrr.smarthealthmonitor.data.SmartHealthRepository
 import mx.utng.lmrr.smarthealthmonitor.ui.components.FilaHistorial
@@ -91,7 +95,18 @@ fun DashboardScreen(
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         titleContentColor = MaterialTheme.colorScheme.onPrimary
-                    )
+                    ),
+                    actions = {
+                        // CastButton: AndroidView que envuelve MediaRouteButton
+                        AndroidView(
+                            factory = { context ->
+                                MediaRouteButton(context).apply {
+                                    CastButtonFactory.setUpMediaRouteButton(context, this)
+                                }
+                            },
+                            modifier = Modifier.size(48.dp)
+                        )
+                    }
                 )
             },
             floatingActionButton = {
