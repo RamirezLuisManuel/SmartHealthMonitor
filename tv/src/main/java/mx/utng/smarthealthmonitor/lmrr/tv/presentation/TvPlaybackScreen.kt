@@ -1,10 +1,10 @@
+@file:OptIn(androidx.tv.material3.ExperimentalTvMaterial3Api::class)
 package mx.utng.smarthealthmonitor.lmrr.tv.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -20,6 +20,7 @@ import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.Surface
+import androidx.tv.material3.Text
 
 @Composable
 fun TvPlaybackScreen(navController: NavController) {

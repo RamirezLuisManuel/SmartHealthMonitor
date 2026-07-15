@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "mx.utng.smarthealthmonitor.lmrr.tv"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "mx.utng.smarthealthmonitor.lmrr.tv"
@@ -38,6 +38,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
     // Jetpack Compose para TV
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
@@ -45,28 +47,28 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.tv.foundation)
     implementation(libs.androidx.tv.material)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.navigation.compose)
 
     // Leanback Library — el estándar de Android TV
-    implementation("androidx.leanback:leanback:1.2.0")
+    implementation(libs.androidx.leanback)
     // Glide para cargar imágenes en las cards
-    implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation(libs.glide)
     // Compartir Room + Repository con módulo app
     // NOTA: implementation(project(":app")) requiere que :app sea un módulo 'library'.
     // Se habilitará cuando se extraiga la lógica compartida a un módulo :core o :data.
     // implementation(project(":app"))
     // ViewModel + Coroutines
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
     // AppCompat (requerido por FragmentActivity y Leanback)
-    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation(libs.androidx.appcompat)
     // Core KTX
-    implementation("androidx.core:core-ktx:1.16.0")
+    implementation(libs.androidx.core.ktx)
     // Fragment KTX — requerido para viewModels() delegate
-    implementation("androidx.fragment:fragment-ktx:1.8.6")
-    // Lifecycle (collectAsStateWithLifecycle, repeatOnLifecycle)
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation(libs.androidx.fragment.ktx)
     // Room — base de datos local del módulo TV
-    implementation("androidx.room:room-runtime:2.7.1")
-    implementation("androidx.room:room-ktx:2.7.1")
-    ksp("androidx.room:room-compiler:2.7.1")
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 }
