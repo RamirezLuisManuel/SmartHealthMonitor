@@ -1,33 +1,54 @@
 package mx.utng.smarthealthmonitor.lmrr.tv
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import mx.utng.smarthealthmonitor.lmrr.tv.mqtt.MqttTvSubscriber
+import mx.utng.lmrr.smarthealthmonitor.mqtt.TvMessage
 
 /**
- * TvViewModel — expone los datos de SmartHealthRepository al MainFragment.
- *
- * Patrón idéntico al del módulo :app (ViewModel → Repository → Room → Flow).
- * La UI (MainFragment) solo observa StateFlows — nunca toca la BD directamente.
+ * TvViewModel actualizado para observar mensajes MQTT y el historial de Room.
  */
-class TvViewModel : ViewModel() {
+class TvViewModel(
+    private val repository: SmartHealthRepository = SmartHealthRepository,
+    context: Context
+) : ViewModel() {
 
-    // FC actual del wearable (o 0 si no hay dato aún)
-    val fc: StateFlow<Int> = SmartHealthRepository.fcFlow
-        .stateIn(
-            scope   = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = 0
-        )
+    private val _state = MutableStateFlow(TvUiState())
+    val state: StateFlow<TvUiState> = _state.asStateFlow()
 
-    // Historial de lecturas desde Room — se actualiza automáticamente con cada INSERT
-    val historial: StateFlow<List<LecturaFC>> =
-        SmartHealthRepository.obtenerHistorial()
-            .stateIn(
-                scope   = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = emptyList()
-            )
+    // Flow de mensajes MQTT entrantes
+    private val mqttFlow = MutableStateFlow<TvMessage?>(null)
+    private val mqttSubscriber = MqttTvSubscriber(context, mqttFlow)
+
+    init {
+        mqttSubscriber.connect()
+
+        // Observar mensajes MQTT y actualizar el estado de la UI
+        viewModelScope.launch {
+            mqttFlow.collect { tvMsg ->
+                tvMsg ?: return@collect
+                _state.update { it.copy(
+                    fcActual   = tvMsg.bpm,
+                    fcEstado   = tvMsg.estado,
+                    ultimaHora = tvMsg.hora,
+                    isLoading  = false
+                )}
+            }
+        }
+
+        // Observar historial de Room
+        viewModelScope.launch {
+            repository.obtenerHistorial().collect { lista ->
+                _state.update { it.copy(lecturas = lista) }
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        mqttSubscriber.disconnect()
+    }
 }
