@@ -26,7 +26,9 @@ class TVActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 
                 // Se utiliza el mismo ViewModel para todo el grafo de navegación
-                val tvViewModel: TvViewModel = viewModel()
+                val tvViewModel: TvViewModel = viewModel(
+                    factory = TvViewModelFactory(applicationContext)
+                )
                 
                 NavHost(navController = navController, startDestination = "catalog") {
                     

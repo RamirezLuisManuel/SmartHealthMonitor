@@ -30,6 +30,9 @@ class HealthDataService : PassiveListenerService() {
             val bpm = ultimoDatoFC.value.toInt()
             Log.d("HealthDataService", "FC recibida desde sensor virtual: $bpm")
 
+            // Actualizar repositorio local (esto disparará el envío MQTT)
+            mx.utng.lmrr.wear.data.SmartHealthRepository.actualizarFC(bpm)
+
             runBlocking(Dispatchers.IO) {
                 wearDataSender.enviarFC(bpm)
             }
