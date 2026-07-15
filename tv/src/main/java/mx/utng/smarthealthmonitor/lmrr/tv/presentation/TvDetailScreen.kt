@@ -21,13 +21,17 @@ import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+import androidx.compose.ui.platform.LocalContext
 import mx.utng.smarthealthmonitor.lmrr.tv.TvViewModel
+import mx.utng.smarthealthmonitor.lmrr.tv.TvViewModelFactory
 
 @Composable
 fun TvDetailScreen(
     lecturaId   : Int,
     navController: NavController,
-    viewModel   : TvViewModel = viewModel()
+    viewModel   : TvViewModel = viewModel(
+        factory = TvViewModelFactory(LocalContext.current.applicationContext)
+    )
 ) {
     val historial by viewModel.historial.collectAsStateWithLifecycle()
     // Buscar la lectura específica en el historial

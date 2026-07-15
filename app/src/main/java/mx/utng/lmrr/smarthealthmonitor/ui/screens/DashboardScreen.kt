@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
+import android.view.ContextThemeWrapper
 import androidx.mediarouter.app.MediaRouteButton
 import com.google.android.gms.cast.framework.CastButtonFactory
 import mx.utng.lmrr.smarthealthmonitor.BuildConfig
@@ -100,7 +101,12 @@ fun DashboardScreen(
                         // CastButton: AndroidView que envuelve MediaRouteButton
                         AndroidView(
                             factory = { context ->
-                                MediaRouteButton(context).apply {
+                                // MediaRouteButton requiere un tema de AppCompat para evitar el crash "background can not be translucent"
+                                val themedContext = androidx.appcompat.view.ContextThemeWrapper(
+                                    context, 
+                                    androidx.appcompat.R.style.Theme_AppCompat_DayNight
+                                )
+                                MediaRouteButton(themedContext).apply {
                                     CastButtonFactory.setUpMediaRouteButton(context, this)
                                 }
                             },

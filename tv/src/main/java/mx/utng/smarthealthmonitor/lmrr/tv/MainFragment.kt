@@ -25,7 +25,9 @@ import kotlinx.coroutines.launch
  */
 class MainFragment : BrowseSupportFragment() {
 
-    private val viewModel: TvViewModel by viewModels()
+    private val viewModel: TvViewModel by viewModels {
+        TvViewModelFactory(requireContext().applicationContext)
+    }
 
     /** Adapter mutable de la fila de historial — se actualiza desde el Flow de Room */
     private lateinit var histAdapter: ArrayObjectAdapter

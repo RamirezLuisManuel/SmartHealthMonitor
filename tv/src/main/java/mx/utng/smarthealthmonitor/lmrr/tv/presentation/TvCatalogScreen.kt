@@ -22,13 +22,17 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import mx.utng.smarthealthmonitor.lmrr.tv.LecturaFC
 import mx.utng.smarthealthmonitor.lmrr.tv.TvViewModel
+import mx.utng.smarthealthmonitor.lmrr.tv.TvViewModelFactory
 
 @Composable
 fun TvCatalogScreen(
     onCardClick: (Int) -> Unit,
-    viewModel: TvViewModel = viewModel()
+    viewModel: TvViewModel = viewModel(
+        factory = TvViewModelFactory(LocalContext.current.applicationContext)
+    )
 ) {
     val historial by viewModel.historial.collectAsStateWithLifecycle()
+    val fcActual by viewModel.fc.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -43,13 +47,14 @@ fun TvCatalogScreen(
             color = Color.White
         )
 
-        if (historial.isEmpty()) {
+        if (historial.isEmpty() && fcActual == 0) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("No hay datos en el historial", color = Color.White)
+                Text("Esperando datos...", color = Color.White)
             }
         } else {
-            // Fila 1: Todas las lecturas
-            Text(text = "Historial Completo", style = MaterialTheme.typography.titleLarge, color = Color.LightGray)
+            // Fila 1: Todas las lecturas con FC Actual dinámica
+            val tituloHistorial = if (fcActual > 0) "Historial Completo ($fcActual bpm)" else "Historial Completo"
+            Text(text = tituloHistorial, style = MaterialTheme.typography.titleLarge, color = Color.LightGray)
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {

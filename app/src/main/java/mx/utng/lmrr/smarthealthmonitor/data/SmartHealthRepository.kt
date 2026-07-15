@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import mx.utng.lmrr.smarthealthmonitor.data.db.LecturaFC
 import mx.utng.lmrr.smarthealthmonitor.data.db.LecturaFCDao
 import mx.utng.lmrr.smarthealthmonitor.data.db.SmartHealthDB
+import mx.utng.lmrr.smarthealthmonitor.mqtt.MqttAppService
 
 object SmartHealthRepository {
     private val _fcFlow = MutableStateFlow(0)
@@ -18,9 +19,16 @@ object SmartHealthRepository {
     val pasosFlow: StateFlow<Int> = _pasosFlow.asStateFlow()
 
     private var dao: LecturaFCDao? = null
+    private var mqttService: MqttAppService? = null
 
     fun init(context: Context) {
         dao = SmartHealthDB.getDatabase(context).lecturaDao()
+        
+        // Inicializar MQTT para recibir datos del reloj y re-publicar al TV
+        if (mqttService == null) {
+            mqttService = MqttAppService(context, _fcFlow)
+            mqttService?.connect()
+        }
     }
 
     suspend fun actualizarFC(bpm: Int) {

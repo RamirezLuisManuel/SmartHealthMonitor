@@ -68,5 +68,6 @@ class MqttAppService(
             qos = MqttConfig.QOS; isRetained = true
         }
         client?.publish(MqttConfig.TOPIC_TV, tvMqtt)
+        android.util.Log.d("MQTT_APP", "📺 Re-publicado al TV: ${fcMsg.bpm} bpm")
     }
 }

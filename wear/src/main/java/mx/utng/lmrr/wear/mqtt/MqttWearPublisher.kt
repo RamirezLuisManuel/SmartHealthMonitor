@@ -14,9 +14,12 @@ class MqttWearPublisher(private val context: Context) {
     private var client: MqttAsyncClient? = null
 
     fun connect() {
+        // Usamos un ID único agregando el timestamp para evitar conflictos de "Identifier rejected"
+        val clientId = "${MqttConfig.CLIENT_WEAR}-${System.currentTimeMillis()}"
+        
         client = MqttAsyncClient(
             MqttConfig.BROKER_URL,
-            MqttConfig.CLIENT_WEAR,
+            clientId,
             MemoryPersistence()
         )
 
@@ -26,16 +29,21 @@ class MqttWearPublisher(private val context: Context) {
             isCleanSession    = true
             connectionTimeout = 30
             keepAliveInterval = 60
-            // SSL habilitado automáticamente por la URL ssl://
-            socketFactory = javax.net.ssl.SSLSocketFactory.getDefault()
+            
+            // Si la URL empieza con ssl://, configuramos el socket factory
+            if (MqttConfig.BROKER_URL.startsWith("ssl://")) {
+                socketFactory = javax.net.ssl.SSLSocketFactory.getDefault()
+            }
         }
 
         client?.connect(options, null, object : IMqttActionListener {
             override fun onSuccess(asyncActionToken: IMqttToken?) {
-                android.util.Log.d("MQTT_WEAR", "✅ Conectado a HiveMQ Cloud")
+                android.util.Log.d("MQTT_WEAR", "✅ Conectado a HiveMQ Cloud con ID: $clientId")
             }
             override fun onFailure(token: IMqttToken?, ex: Throwable?) {
-                android.util.Log.e("MQTT_WEAR", "❌ Error: ${ex?.message}")
+                val cause = (ex as? MqttException)?.cause
+                android.util.Log.e("MQTT_WEAR", "❌ Error de conexión: ${ex?.message} (Causa: ${cause?.message})")
+                ex?.printStackTrace()
             }
         })
     }

@@ -3,9 +3,11 @@ package mx.utng.lmrr.wear.data
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import mx.utng.lmrr.wear.mqtt.MqttWearPublisher
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import android.content.Context
 
 object SmartHealthRepository {
     private val _fcFlow = MutableStateFlow(72)
@@ -16,9 +18,20 @@ object SmartHealthRepository {
     val historialFlow: StateFlow<List<LecturaFCLocal>> = _historialFlow.asStateFlow()
 
     private var nextId = 1
+    private var mqttPublisher: MqttWearPublisher? = null
+
+    fun init(context: Context) {
+        if (mqttPublisher == null) {
+            mqttPublisher = MqttWearPublisher(context)
+            mqttPublisher?.connect()
+        }
+    }
 
     fun actualizarFC(bpm: Int) {
         _fcFlow.value = bpm
+        
+        // Publicar por MQTT a HiveMQ Cloud
+        mqttPublisher?.publishFC(bpm, "Normal")
 
         // Registrar en historial local
         val hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
