@@ -33,6 +33,11 @@ class HealthDataService : PassiveListenerService() {
             // Actualizar repositorio local (esto disparará el envío MQTT)
             mx.utng.lmrr.wear.data.SmartHealthRepository.actualizarFC(bpm)
 
+            // Intentar sincronizar con Neon si hay WiFi
+            (applicationContext as? mx.utng.lmrr.wear.SmartHealthWearApp)?.let {
+                mx.utng.lmrr.wear.SmartHealthWearApp.syncManager.attemptSync()
+            }
+
             runBlocking(Dispatchers.IO) {
                 wearDataSender.enviarFC(bpm)
             }

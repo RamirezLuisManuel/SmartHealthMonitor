@@ -8,5 +8,6 @@ data class LecturaFCLocal(
     val id: Int,
     val valorBpm: Int,
     val hora: String,
-    val esNormal: Boolean = valorBpm in 60..100
+    val esNormal: Boolean = valorBpm in 60..100,
+    val sincronizado: Boolean = false
 )

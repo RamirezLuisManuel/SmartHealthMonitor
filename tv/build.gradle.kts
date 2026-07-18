@@ -1,8 +1,18 @@
+import java.util.Properties
+
+// ── Leer credenciales de local.properties (nunca en el código fuente) ─────────
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
+}
+
 // tv/build.gradle.kts
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22"
 }
 
 android {
@@ -15,6 +25,14 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        // ── Neon PostgreSQL credentials (desde local.properties) ──────────────
+        buildConfigField("String", "NEON_HOST",
+            "\"${localProperties["NEON_HOST"] ?: ""}\"")
+        buildConfigField("String", "NEON_API_KEY",
+            "\"${localProperties["NEON_API_KEY"] ?: ""}\"")
+        buildConfigField("String", "NEON_CONN_STRING",
+            "\"${localProperties["NEON_CONN_STRING"] ?: ""}\"")
     }
 
     buildTypes {
@@ -34,6 +52,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -77,4 +96,10 @@ dependencies {
     implementation("org.eclipse.paho:org.eclipse.paho.android.service:1.1.1")
     // Kotlinx Serialization para JSON
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
+    // Retrofit
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.converter.kotlinx.serialization)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 }
