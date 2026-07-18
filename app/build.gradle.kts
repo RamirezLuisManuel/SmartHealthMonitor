@@ -1,3 +1,12 @@
+import java.util.Properties
+
+// ── Leer credenciales de local.properties (nunca en el código fuente) ─────────
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -19,6 +28,14 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+
+        // ── Neon PostgreSQL credentials (desde local.properties) ──────────────
+        buildConfigField("String", "NEON_HOST",
+            "\"${localProperties["NEON_HOST"] ?: ""}\"")
+        buildConfigField("String", "NEON_API_KEY",
+            "\"${localProperties["NEON_API_KEY"] ?: ""}\"")
+        buildConfigField("String", "NEON_CONN_STRING",
+            "\"${localProperties["NEON_CONN_STRING"] ?: ""}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -81,4 +98,11 @@ dependencies {
     implementation("org.eclipse.paho:org.eclipse.paho.android.service:1.1.1")
     // Kotlinx Serialization para JSON
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
+    // Retrofit & WorkManager
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.converter.kotlinx.serialization)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 }
