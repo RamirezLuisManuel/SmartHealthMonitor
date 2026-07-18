@@ -38,11 +38,25 @@ object SmartHealthRepository {
         val nuevaLectura = LecturaFCLocal(
             id       = nextId++,
             valorBpm = bpm,
-            hora     = hora
+            hora     = hora,
+            sincronizado = false
         )
         val listaActual = _historialFlow.value.toMutableList()
         listaActual.add(0, nuevaLectura)               // más reciente primero
         if (listaActual.size > 50) listaActual.removeLast()
         _historialFlow.value = listaActual
+    }
+
+    fun getHistorialNoSincronizado(): List<LecturaFCLocal> {
+        return _historialFlow.value.filter { !it.sincronizado }
+    }
+
+    fun marcarSincronizado(id: Int) {
+        val listaActual = _historialFlow.value.toMutableList()
+        val index = listaActual.indexOfFirst { it.id == id }
+        if (index != -1) {
+            listaActual[index] = listaActual[index].copy(sincronizado = true)
+            _historialFlow.value = listaActual
+        }
     }
 }

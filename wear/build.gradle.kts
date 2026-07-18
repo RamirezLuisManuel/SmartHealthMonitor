@@ -34,7 +34,7 @@ android {
         buildConfigField("String", "NEON_API_KEY",
             "\"${localProperties["NEON_API_KEY"] ?: ""}\"")
         buildConfigField("String", "NEON_CONN_STRING",
-            "\"${localProperties["NEON_CONN_STRING"] ?: "\"")
+            "\"${localProperties["NEON_CONN_STRING"] ?: ""}\"")
 
     }
 
